@@ -1,1363 +1,627 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Scholarship and Fee Management</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f4f6f9;
-        }
-
-        header {
-            background-color: #243b55;
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .container {
-            padding: 30px;
-            max-width: 1000px;
-            margin: auto;
-        }
-
-        .card {
-            background-color: white;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #cccccc;
-        }
-
-        input {
-            padding: 10px;
-            margin: 8px 5px 8px 0;
-            border: 1px solid #cccccc;
-            border-radius: 5px;
-        }
-
-        button {
-            background-color: #243b55;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #1a2d42;
-        }
-
-        .delete-btn {
-            background-color: #c0392b;
-        }
-
-        .delete-btn:hover {
-            background-color: #922b21;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #dddddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #243b55;
-            color: white;
-        }
-
-        .form-row {
-            margin-bottom: 10px;
-        }
-
-        #studentForm {
-            display: none;
-        }
-
-        @media (max-width: 600px) {
-            input {
-                width: 90%;
-            }
-
-            table {
-                font-size: 12px;
-            }
-        }
-        .dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.summary-card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.summary-card h3 {
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-
-.summary-card p {
-    font-size: 28px;
-    font-weight: bold;
-    color: #2563eb;
-}
-
-@media (max-width: 800px) {
-    .dashboard {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.scholarship-summary {
-    cursor: pointer;
-}
-
-.scholarship-summary small {
-    color: #666;
-}
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1728">
+  <meta name="description" content="Scholarship and fee management dashboard for student records, scholarship opportunities, and fee payments.">
+  <title>Scholaris | Scholarship &amp; Fee Management</title>
+<style>
+  :root {
+    --ink: #172338;
+    --muted: #738096;
+    --sidebar: #0c1728;
+    --sidebar-hover: #17263d;
+    --navy: #203b5b;
+    --navy-dark: #172f4d;
+    --gold: #d7ad61;
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --border: #e4e9f0;
+    --soft-blue: #edf3ff;
+    --green: #178765;
+    --red: #c54843;
+    --shadow: 0 5px 20px rgba(22, 38, 61, .055);
+  }
+  * { box-sizing: border-box; }
+  /* Intro / brand screen, inspired by the reference video. */
+  .intro-screen { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: hidden; padding: 28px; color: #f4f6fb; background: radial-gradient(ellipse at 50% 42%, rgba(31,56,82,.42) 0%, rgba(10,20,34,.12) 36%, transparent 65%), linear-gradient(135deg, #081321 0%, #0d1a2c 58%, #07111e 100%); transition: opacity .42s ease, visibility .42s ease; }
+  .intro-screen::before { position: absolute; inset: 0; content: ""; pointer-events: none; opacity: .16; background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(ellipse at center, #000 0%, transparent 78%); }
+  .intro-screen.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
+  .intro-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: min(720px, 100%); text-align: center; animation: intro-rise .75s cubic-bezier(.2,.75,.2,1) both; }
+  .intro-crest { position: relative; display: grid; place-items: center; width: 84px; height: 84px; margin-bottom: 28px; color: var(--gold); }
+  .intro-crest::before { position: absolute; inset: 12px 8px; content: ""; border: 3px solid var(--gold); border-top-width: 5px; border-bottom-width: 5px; opacity: .88; }
+  .intro-crest::after { position: absolute; top: 2px; left: 17px; right: 17px; height: 7px; content: ""; background: var(--gold); box-shadow: 0 73px 0 -1px var(--gold); }
+  .intro-crest span { font-family: Georgia, "Times New Roman", serif; font-size: 46px; line-height: 1; font-weight: 700; text-shadow: 0 4px 24px rgba(215,173,97,.14); }
+  .intro-title { margin: 0; padding-left: .22em; color: #f5f6fa; font-size: clamp(31px, 5vw, 48px); letter-spacing: .22em; line-height: 1.2; font-weight: 550; }
+  .intro-rule { width: 82px; height: 1px; margin: 22px 0 15px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .intro-tagline { margin: 0; color: #9baac0; font-size: 10px; letter-spacing: .31em; font-weight: 700; text-transform: uppercase; }
+  .intro-enter { position: absolute; right: clamp(20px, 4vw, 52px); bottom: clamp(20px, 4vw, 42px); z-index: 2; display: inline-flex; align-items: center; gap: 14px; padding: 12px 0 12px 18px; border: 0; border-radius: 0; background: transparent; color: #d6e0ee; font-size: 11px; letter-spacing: .18em; font-weight: 750; text-transform: uppercase; }
+  .intro-enter span { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid rgba(215,173,97,.6); border-radius: 50%; color: var(--gold); font-size: 17px; transition: transform .18s ease, background .18s ease; }
+  .intro-enter:hover { background: transparent; color: #fff; }
+  .intro-enter:hover span { transform: translateX(3px); background: rgba(215,173,97,.12); }
+  .intro-footnote { position: absolute; bottom: 38px; left: clamp(20px, 4vw, 52px); color: #5f7189; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+  @keyframes intro-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .intro-content { animation: none; } .intro-screen { transition: none; } }
+  html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  button { border: 0; border-radius: 8px; padding: 10px 15px; background: var(--navy); color: #fff; cursor: pointer; font-size: 14.5px; font-weight: 650; transition: background .16s ease, transform .16s ease, box-shadow .16s ease; }
+  button:hover { background: var(--navy-dark); }
+  button:active { transform: translateY(1px); }
+  button:focus-visible, input:focus-visible, select:focus-visible, [role="button"]:focus-visible { outline: 3px solid #9dbdff; outline-offset: 2px; }
+  button.secondary { background: #edf1f6; color: #273e5a; }
+  button.secondary:hover { background: #dfe7f0; }
+  button.danger { background: #fff0ef; color: #b63a35; }
+  button.danger:hover { background: #ffe1df; }
+  button.success { background: #16835f; }
+  button.success:hover { background: #106b4d; }
+  button.small { padding: 7px 10px; font-size: 13px; border-radius: 7px; }
+  .app-shell { min-height: 100vh; }
+  .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 30; display: flex; flex-direction: column; width: 232px; padding: 24px 15px 18px; color: #e9eef7; background: var(--sidebar); }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 28px; border-bottom: 1px solid rgba(225,235,248,.1); }
+  .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; color: #1c2838; background: var(--gold); font-family: Georgia, serif; font-size: 23px; font-weight: 800; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+  .brand-name { font-size: 18px; font-weight: 750; letter-spacing: -.4px; line-height: 1.15; }
+  .brand-caption { display: block; margin-top: 5px; color: #94a5bd; font-size: 8px; letter-spacing: 1.45px; font-weight: 700; }
+  .nav-label { margin: 27px 10px 9px; color: #7f91a9; font-size: 10.5px; letter-spacing: 1.5px; font-weight: 750; }
+  .side-nav { display: grid; gap: 5px; }
+  .side-link { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #aebbd0; text-align: left; font-size: 14px; font-weight: 550; }
+  .side-link:hover { background: var(--sidebar-hover); color: #fff; }
+  .side-link.active { background: #1c2b41; border-color: rgba(255,255,255,.035); color: #fff; box-shadow: inset 3px 0 0 var(--gold); }
+  .nav-icon { display: inline-grid; place-items: center; width: 19px; color: #8ea2bd; font-size: 17px; line-height: 1; }
+  .side-link.active .nav-icon { color: var(--gold); }
+  .sidebar-spacer { flex: 1; }
+  .academic-year { margin: 20px 3px 15px; padding: 15px 13px; border: 1px solid rgba(222,232,245,.1); border-radius: 11px; background: rgba(255,255,255,.045); }
+  .academic-year .tiny-label { display: block; color: #8799b3; font-size: 9.5px; letter-spacing: 1.25px; font-weight: 750; }
+  .academic-year strong { display: block; margin-top: 5px; color: #f1f4fa; font-size: 18px; font-weight: 700; }
+  .profile { display: flex; align-items: center; gap: 10px; padding: 13px 6px 0; border-top: 1px solid rgba(225,235,248,.1); }
+  .avatar { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border-radius: 50%; color: #fff; background: #435a78; font-size: 12px; font-weight: 750; }
+  .profile strong { display: block; font-size: 13px; font-weight: 650; }
+  .profile small { display: block; margin-top: 2px; color: #94a5bd; font-size: 11px; }
+  .app-main { min-height: 100vh; margin-left: 232px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 86px; padding: 17px clamp(22px, 3vw, 42px); border-bottom: 1px solid #e8edf3; background: rgba(255,255,255,.94); }
+  .topbar p { margin: 0 0 3px; }
+  .eyebrow { color: #9a7940; font-size: 10.5px; letter-spacing: 1.55px; font-weight: 800; text-transform: uppercase; }
+  .topbar h1 { margin: 0; color: #1d2b3e; font-size: clamp(25px, 2.3vw, 31px); letter-spacing: -1.05px; line-height: 1.2; font-weight: 750; }
+  .topbar .subtitle { margin-top: 5px; color: var(--muted); font-size: 14.5px; }
+  .topbar-meta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .demo-chip { padding: 7px 11px; border: 1px solid #e3eaf3; border-radius: 30px; background: #f8fafc; color: #65758b; font-size: 12px; font-weight: 650; }
+  .topbar-avatar { width: 36px; height: 36px; background: #203b5b; }
+  .page { width: min(1600px, 100%); margin: 0 auto; padding: 25px clamp(18px, 3vw, 42px) 32px; }
+  .notice { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 21px; padding: 12px 15px; border: 1px solid #dce6f5; border-radius: 10px; background: #f0f5fc; color: #536982; font-size: 13px; line-height: 1.45; }
+  .notice::before { content: "i"; display: grid; place-items: center; width: 18px; height: 18px; flex: 0 0 18px; border-radius: 50%; background: #dce8fa; color: #3e5f88; font-family: Georgia, serif; font-size: 12px; font-weight: 800; }
+  .dashboard { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 22px; }
+  .summary-card, .card { min-width: 0; border: 1px solid #edf0f5; border-radius: 13px; background: var(--card); box-shadow: var(--shadow); }
+  .summary-card { position: relative; padding: 18px 18px 17px; overflow: hidden; }
+  .summary-card::after { position: absolute; top: 17px; right: 17px; display: grid; place-items: center; width: 31px; height: 31px; border-radius: 9px; background: #f1f3ff; color: #6872ad; content: attr(data-symbol); font-size: 15px; font-weight: 750; }
+  .summary-card:nth-child(2)::after { background: #fff5e7; color: #b9883e; }
+  .summary-card:nth-child(3)::after { background: #e7f8f1; color: #2d9675; }
+  .summary-card:nth-child(4)::after { background: #fff0ee; color: #ca7167; }
+  .summary-card h3 { max-width: calc(100% - 34px); margin: 0 0 10px; color: #6b7890; font-size: 13.5px; font-weight: 650; }
+  .summary-card .metric { margin: 0; color: #1d2b3f; font-size: 29px; line-height: 1.2; letter-spacing: -.7px; font-weight: 780; font-variant-numeric: tabular-nums; }
+  .summary-card small { display: block; margin-top: 8px; color: #8793a6; font-size: 11.5px; }
+  .summary-card.clickable { cursor: pointer; transition: border-color .15s, transform .15s; }
+  .summary-card.clickable:hover { transform: translateY(-1px); border-color: #c9d5e6; }
+  .workspace-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(275px, .88fr); align-items: start; gap: 19px; }
+  .primary-column, .side-column { display: grid; min-width: 0; gap: 19px; }
+  .card { padding: 21px; margin: 0; scroll-margin-top: 22px; }
+  .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+  .section-head h2, h2 { margin: 0; color: #1b2b40; font-size: 20px; letter-spacing: -.35px; line-height: 1.35; font-weight: 750; }
+  .section-head .muted { margin: 5px 0 0; }
+  h3 { margin: 0 0 12px; color: #23344a; font-size: 16px; font-weight: 700; }
+  .muted { color: var(--muted); font-size: 14.5px; }
+  p.muted { margin: 6px 0 13px; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+  .form-grid { display: grid; grid-template-columns: repeat(5, minmax(115px, 1fr)); gap: 12px; align-items: end; }
+  .field { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+  label { color: #49586d; font-size: 15px; font-weight: 650; }
+  input, select { min-width: 0; width: 100%; padding: 10px 11px; border: 1px solid #d6dee8; border-radius: 8px; background: #fff; color: #1c2b3d; font-size: 15.5px; line-height: 1.35; }
+  input::placeholder { color: #a1abba; }
+  input:focus, select:focus { border-color: #8aa9d3; outline: 2px solid #e1ebf9; }
+  .hidden { display: none !important; }
+  .table-wrap { width: 100%; overflow-x: auto; border: 1px solid #e7ebf1; border-radius: 9px; margin-top: 14px; background: #fff; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 720px; background: #fff; font-size: 15px; }
+  th, td { padding: 12px 13px; border-bottom: 1px solid #e9edf3; text-align: left; vertical-align: middle; }
+  th { background: #f7f9fc; color: #6c7a90; font-size: 11.5px; letter-spacing: .55px; text-transform: uppercase; font-weight: 800; white-space: normal; }
+  td { color: #29384b; font-size: 15px; line-height: 1.45; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fbfcfe; }
+  td.actions { min-width: 118px; white-space: nowrap; }
+  .actions button { margin: 2px 3px 2px 0; }
+  .status { display: inline-flex; align-items: center; border-radius: 30px; padding: 4px 9px; font-size: 11.5px; font-weight: 750; white-space: nowrap; }
+  .status.paid { color: #157353; background: #e3f7ee; }
+  .status.pending { color: #97651b; background: #fff3d8; }
+  .empty { padding: 23px 14px; color: #8a96a8; text-align: center; }
+  .inline-input { min-width: 100px; max-width: 225px; padding: 8px; font-size: 13px; }
+  .search { max-width: 285px; }
+  .form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 17px; }
+  .message { display: none; margin: 12px 0; padding: 11px 13px; border-radius: 8px; font-size: 14px; }
+  .message.show { display: block; }
+  .message.error { border: 1px solid #f5c6c2; background: #fff1f0; color: #9f2721; }
+  .message.ok { border: 1px solid #bfe7ce; background: #edfbf2; color: #176b42; }
+  .scholarship-card { padding: 19px; }
+  .mini-heading { display: flex; justify-content: space-between; align-items: center; gap: 9px; }
+  .availability { display: inline-flex; align-items: center; gap: 5px; border-radius: 30px; padding: 5px 8px; background: #e6f7ef; color: #278363; font-size: 10.5px; font-weight: 750; white-space: nowrap; }
+  .availability::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #35a879; }
+  .scholarship-table-wrap table { min-width: 0; table-layout: fixed; }
+  .scholarship-table-wrap th, .scholarship-table-wrap td { padding: 9px 7px; overflow-wrap: anywhere; }
+  .scholarship-table-wrap th { font-size: 9.5px; letter-spacing: .3px; }
+  .scholarship-table-wrap td { font-size: 12px; }
+  .scholarship-table-wrap th:nth-child(1) { width: 22%; }
+  .scholarship-table-wrap th:nth-child(2) { width: 34%; }
+  .scholarship-table-wrap th:nth-child(3) { width: 28%; }
+  .scholarship-table-wrap th:nth-child(4) { width: 16%; }
+  .scholarship-table-wrap td:last-child { color: #23805f; font-size: 11px; font-weight: 700; }
+  .scholarship-state { display: block; color: #23805f; font-size: 11px; font-weight: 750; }
+  .scholarship-assigned { display: block; margin-top: 3px; color: #8290a4; font-size: 10px; line-height: 1.35; font-weight: 550; }
+  #scholarshipMessage { display: block; margin-top: 9px; font-size: 12px; }
+  #studentFormCard { border-color: #dce5f0; }
+  #studentFormCard .form-grid { margin-top: 17px; }
+  #studentRecordsSection table { min-width: 740px; }
+  #feeManagementSection table { min-width: 650px; }
+  .fee-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+  .footer { padding: 20px 12px 8px; color: #8c97a8; font-size: 12px; text-align: center; }
+  @media (max-width: 1220px) {
+    .sidebar { width: 210px; }
+    .app-main { margin-left: 210px; }
+    .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .workspace-grid { grid-template-columns: minmax(0, 1.5fr) minmax(250px, .9fr); }
+    .card { padding: 17px; }
+    .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 880px) {
+    .sidebar { position: static; width: 100%; min-height: auto; padding: 13px 15px; }
+    .brand { padding: 0 4px 12px; border-bottom: 0; }
+    .brand-mark { width: 34px; height: 34px; flex-basis: 34px; font-size: 20px; }
+    .nav-label, .academic-year, .profile { display: none; }
+    .side-nav { display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 2px; }
+    .side-link { width: auto; flex: 0 0 auto; padding: 9px 11px; }
+    .app-main { margin-left: 0; }
+    .topbar { min-height: auto; padding: 18px 20px; }
+    .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+    .side-column { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+    .scholarship-card { min-width: 0; }
+  }
+  @media (max-width: 580px) {
+    body { font-size: 15.5px; }
+    .topbar { align-items: flex-start; padding: 17px 15px; }
+    .topbar h1 { font-size: 25px; }
+    .topbar .subtitle { font-size: 13px; }
+    .topbar-meta { gap: 7px; }
+    .demo-chip { display: none; }
+    .page { padding: 16px 12px 24px; }
+    .notice { padding: 10px 11px; font-size: 12.5px; }
+    .dashboard { gap: 10px; margin-bottom: 15px; }
+    .summary-card { padding: 14px 12px; }
+    .summary-card::after { top: 10px; right: 10px; width: 25px; height: 25px; font-size: 12px; }
+    .summary-card h3 { font-size: 12px; margin-bottom: 8px; }
+    .summary-card .metric { font-size: 25px; }
+    .summary-card small { font-size: 10.5px; }
+    .card { padding: 15px 12px; border-radius: 11px; }
+    .section-head { align-items: flex-start; }
+    .section-head h2, h2 { font-size: 18px; }
+    .side-column { grid-template-columns: minmax(0, 1fr); }
+    .form-grid { grid-template-columns: minmax(0, 1fr); }
+    .toolbar > .search { max-width: none; }
+    .toolbar { gap: 8px; }
+    .scholarship-table-wrap th, .scholarship-table-wrap td { padding: 8px 6px; }
+    .scholarship-table-wrap th { font-size: 9px; }
+    .scholarship-table-wrap td { font-size: 12px; }
+    .footer { padding-top: 16px; }
+  }
+</style>
 </head>
-
 <body>
-
-    <header>
-        <h1>Scholarship and Fee Management System</h1>
-        <p>Manage student scholarships and fee details</p>
-    </header>
-    <!-- Dashboard Summary -->
-<div class="dashboard">
-    <div class="summary-card">
-        <h3>Total Students</h3>
-        <p id="totalStudents">0</p>
-        <small id="applicationSummary">Approved: 0 | Pending: 0</small>
+  <section class="intro-screen" id="introScreen" role="dialog" aria-modal="true" aria-label="Welcome to Scholaris">
+    <div class="intro-content">
+      <div class="intro-crest" aria-hidden="true"><span>S</span></div>
+      <h1 class="intro-title">SCHOLARIS</h1>
+      <div class="intro-rule" aria-hidden="true"></div>
+      <p class="intro-tagline">Academic finance, made clear</p>
     </div>
+    <span class="intro-footnote">Scholarship &amp; Fee Management</span>
+    <button type="button" class="intro-enter" id="enterDashboardBtn">Enter dashboard <span aria-hidden="true">↗</span></button>
+  </section>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <div><div class="brand-name">Scholaris</div><span class="brand-caption">ACADEMIC FINANCE, MADE CLEAR</span></div>
+      </div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="side-nav">
+        <button type="button" class="side-link active" data-target="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">⌂</span>Overview</button>
+        <button type="button" class="side-link" data-target="students" aria-current="false"><span class="nav-icon" aria-hidden="true">♙</span>Students</button>
+        <button type="button" class="side-link" data-target="fees" aria-current="false"><span class="nav-icon" aria-hidden="true">▤</span>Fee records</button>
+        <button type="button" class="side-link" data-target="scholarships" aria-current="false"><span class="nav-icon" aria-hidden="true">✧</span>Scholarships</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="academic-year"><span class="tiny-label">ACADEMIC YEAR</span><strong>2025–26</strong></div>
+      <div class="profile"><div class="avatar">AD</div><div><strong>Admin Office</strong><small>Management workspace</small></div></div>
+    </aside>
 
-    <div class="summary-card scholarship-summary"
-     onclick="showScholarshipSummary()">
-    <h3>Scholarships</h3>
-    <p id="totalScholarshipStudents">0</p>
-    <small id="scholarshipAmountSummary">Amount: ₹0</small>
-</div>
-
-    <div class="summary-card">
-        <h3>Total Fees</h3>
-        <p id="totalFeeRecords">0</p>
-        <small id="paidFeeSummary">Paid: ₹0</small>
-    </div>
-
-    <div class="summary-card">
-        <h3>Outstanding Fees</h3>
-        <p id="pendingPayments">₹0</p>
-        <small>From API dashboard</small>
-    </div>
-</div>
-
-    <div class="container">
-
-        <div class="card">
-            <h2>Student Management</h2>
-
-            <p>Add and view student records.</p>
-
-            <button onclick="showStudentForm()">
-                Add Student
-            </button>
+    <div class="app-main">
+      <header class="topbar" id="overview">
+        <div>
+          <p class="eyebrow">ACADEMIC YEAR 2025–26</p>
+          <h1>Finance at a glance.</h1>
+          <p class="subtitle">Track students, scholarships and fee payments in one place.</p>
         </div>
+        <div class="topbar-meta"><span class="demo-chip">Local demo workspace</span><div class="avatar topbar-avatar" aria-label="Admin Office">AD</div></div>
+      </header>
 
-        <div class="card" id="studentForm">
+      <main class="page">
+        <p class="notice">Changes are saved in this browser on this device. This edition works without starting a local backend; its demo data is not shared with other devices.</p>
+        <div id="globalMessage" class="message" role="status" aria-live="polite"></div>
 
-            <h2>Add New Student</h2>
+        <section class="dashboard" aria-label="Dashboard summary">
+          <div class="summary-card" data-symbol="♙"><h3>Total Students</h3><p class="metric" id="totalStudents">0</p><small>Student directory</small></div>
+          <div class="summary-card clickable" data-symbol="✧" id="scholarshipSummaryCard" role="button" tabindex="0" aria-controls="scholarshipSummaryDetails"><h3>Scholarship Students</h3><p class="metric" id="totalScholarshipStudents">0</p><small>Click to view breakdown</small></div>
+          <div class="summary-card" data-symbol="₹"><h3>Total Fee Records</h3><p class="metric" id="totalFeeRecords">0</p><small>Recorded fee entries</small></div>
+          <div class="summary-card" data-symbol="↗"><h3>Pending Payments</h3><p class="metric" id="pendingPayments">0</p><small>Payments to follow up</small></div>
+        </section>
 
-            <form onsubmit="addStudent(event)">
-
-                <div class="form-row">
-                    <input
-                        type="text"
-                        id="studentId"
-                        placeholder="Student ID"
-                        required
-                    >
-
-                    <input
-                        type="text"
-                        id="studentName"
-                        placeholder="Student Name"
-                        required
-                    >
+        <div class="workspace-grid">
+          <div class="primary-column">
+            <section class="card hidden" id="studentFormCard">
+              <div class="section-head"><div><p class="eyebrow">STUDENT DETAILS</p><h2 id="studentFormTitle">Add New Student</h2></div></div>
+              <form id="studentForm">
+                <div class="form-grid">
+                  <div class="field"><label for="studentId">Student ID</label><input id="studentId" required maxlength="10" placeholder="e.g. S007"></div>
+                  <div class="field"><label for="studentName">Student name</label><input id="studentName" required maxlength="100" placeholder="Full name"></div>
+                  <div class="field"><label for="phone">Phone number</label><input id="phone" required inputmode="tel" maxlength="15" placeholder="Phone number"></div>
+                  <div class="field"><label for="programId">Program</label><select id="programId" required><option value="">Select program</option><option>Computer Science and Engineering</option><option>Electronics and Communication Engineering</option><option>Mechanical Engineering</option><option>Information Technology</option><option>Electrical and Electronics Engineering</option><option>Other</option></select></div>
+                  <div class="field"><label for="scholarshipType">Scholarship type</label><select id="scholarshipType" required></select></div>
                 </div>
+                <div class="form-actions"><button type="submit" class="success">Save student</button><button type="button" id="cancelStudentFormBtn" class="secondary">Cancel</button></div>
+              </form>
+            </section>
 
-                <div class="form-row">
-                    <input
-                        type="text"
-                        id="phone"
-                        placeholder="Phone Number"
-                        required
-                    >
+            <section class="card" id="studentRecordsSection">
+              <div class="section-head">
+                <div><p class="eyebrow">RECORDS</p><h2>Student directory</h2><p class="muted">Manage student details and scholarship assignments.</p></div>
+                <button type="button" id="showStudentFormBtn">+ Add student</button>
+              </div>
+              <div class="toolbar"><input id="searchStudent" class="search" type="search" placeholder="Search by student ID or name" aria-label="Search students"></div>
+              <div class="table-wrap"><table><thead><tr><th>Student ID</th><th>Name</th><th>Phone</th><th>Program</th><th>Scholarship Type</th><th>Action</th></tr></thead><tbody id="studentTableBody"></tbody></table></div>
+            </section>
 
-                    <input
-                        type="text"
-                        id="programId"
-                        placeholder="Program ID"
-                        required
-                    >
-                    <small>Scholarship information is managed through scholarship applications.</small>
+            <section class="card" id="feeManagementSection">
+              <div class="fee-topline"><div><p class="eyebrow">PAYMENTS</p><h2>Fee ledger</h2><p class="muted">Track paid amounts, scholarships and outstanding balances.</p></div></div>
+              <h3 style="margin-top:18px">Add fee record</h3>
+              <form id="feeForm">
+                <div class="form-grid">
+                  <div class="field"><label for="feeStudentId">Student ID</label><input id="feeStudentId" required maxlength="10" placeholder="e.g. S006"></div>
+                  <div class="field"><label for="totalFee">Total fee (₹)</label><input type="number" id="totalFee" required min="0" step="0.01" placeholder="0.00"></div>
+                  <div class="field"><label for="scholarshipAmount">Scholarship (₹)</label><input type="number" id="scholarshipAmount" value="0" required min="0" step="0.01"></div>
+                  <div class="field"><label for="paidFee">Paid fee (₹)</label><input type="number" id="paidFee" value="0" required min="0" step="0.01"></div>
+                  <div class="field"><button type="submit" class="success">+ Add fee record</button></div>
                 </div>
+              </form>
+              <p class="muted">Remaining fee is calculated automatically. Each student can have multiple fee records.</p>
+              <div class="table-wrap"><table><thead><tr><th>Student ID</th><th>Total fee</th><th>Scholarship</th><th>Paid fee</th><th>Remaining fee</th><th>Status</th><th>Action</th></tr></thead><tbody id="feeTableBody"></tbody></table></div>
+            </section>
+          </div>
 
-                <button type="submit">
-                    Save Student
-                </button>
+          <aside class="side-column" aria-label="Scholarship details">
+            <section class="card scholarship-card" id="scholarshipManagementSection">
+              <div class="mini-heading"><div><p class="eyebrow">FUNDING</p><h2>Scholarships</h2></div><span class="availability">Available</span></div>
+              <p class="muted">Browse all six scholarship opportunities.</p>
+              <div class="toolbar"><button type="button" class="secondary small" id="toggleScholarshipsBtn">View scholarships</button></div>
+              <div id="scholarshipTableWrap" class="table-wrap scholarship-table-wrap hidden"><table><thead><tr><th>Scholarship ID</th><th>Name</th><th>Eligibility</th><th>Status</th></tr></thead><tbody id="scholarshipTableBody"></tbody></table></div>
+              <span id="scholarshipMessage" class="muted" aria-live="polite"></span>
+            </section>
 
-                <button type="button" onclick="hideStudentForm()">
-                    Cancel
-                </button>
-
-            </form>
+            <section class="card hidden" id="scholarshipSummaryDetails">
+              <p class="eyebrow">BREAKDOWN</p><h2>Scholarship students</h2>
+              <div class="table-wrap"><table><thead><tr><th>Scholarship type</th><th>Students</th></tr></thead><tbody id="scholarshipSummaryBody"></tbody></table></div>
+            </section>
+          </aside>
         </div>
-
-        <div class="card">
-
-            <h2>Student Records</h2>
-            <input
-    type="text"
-    id="searchStudent"
-    placeholder="Search by student ID or name"
-    oninput="searchStudents()"
->
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Program</th>
-                        <th>Scholarship Type</th>
-                        <th>Action</th>
-
-                    </tr>
-                </thead>
-
-                <tbody id="studentTableBody">
-                    <tr>
-                        <td colspan="7">
-                            No student records yet.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-        </div>
-
+        <footer class="footer">Scholaris · Scholarship &amp; Fee Management System · Demo workspace</footer>
+      </main>
     </div>
-    <!-- Scholarship Summary Details -->
-<div id="scholarshipSummaryDetails" class="card" style="display: none;">
-    <h2>Scholarship Student Details</h2>
+  </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Scholarship Type</th>
-                <th>Number of Students</th>
-            </tr>
-        </thead>
+<script>
+(() => {
+  "use strict";
+  const STORAGE_KEYS = { students: "sfms.fixed.students.v1", fees: "sfms.fixed.fees.v1" };
+  const scholarshipTypes = [
+    "No Scholarship", "Merit Scholarship", "Need-Based Scholarship", "Sports Scholarship",
+    "Academic Excellence Scholarship", "Research Scholarship", "Community Service Scholarship"
+  ];
+  const scholarshipCatalog = [
+    { id: "SCH001", name: "Merit Scholarship", eligibility: "High academic performance", status: "Available" },
+    { id: "SCH002", name: "Need-Based Scholarship", eligibility: "Demonstrated financial need", status: "Available" },
+    { id: "SCH003", name: "Sports Scholarship", eligibility: "Outstanding sports performance", status: "Available" },
+    { id: "SCH004", name: "Academic Excellence Scholarship", eligibility: "Consistently excellent academic results", status: "Available" },
+    { id: "SCH005", name: "Research Scholarship", eligibility: "Approved student research project", status: "Available" },
+    { id: "SCH006", name: "Community Service Scholarship", eligibility: "Documented community service", status: "Available" }
+  ];
+  const defaultStudents = [
+    { id: "S001", name: "Aarav Sharma", phone: "9876543210", programId: "Computer Science and Engineering", scholarshipType: "No Scholarship" },
+    { id: "S002", name: "Priya Nair", phone: "9876543211", programId: "Electronics and Communication Engineering", scholarshipType: "No Scholarship" },
+    { id: "S003", name: "Rahul Verma", phone: "9876543212", programId: "Mechanical Engineering", scholarshipType: "No Scholarship" },
+    { id: "S004", name: "Ananya Singh", phone: "9876543213", programId: "Computer Science and Engineering", scholarshipType: "No Scholarship" },
+    { id: "S005", name: "Karan Patel", phone: "9876543214", programId: "Electronics and Communication Engineering", scholarshipType: "No Scholarship" },
+    { id: "S006", name: "Ravi Patil", phone: "9485165198", programId: "Computer Science and Engineering", scholarshipType: "No Scholarship" }
+  ];
+  const defaultFees = ["S001", "S002", "S003", "S004", "S005"].map((studentId, i) => ({
+    feeId: `F${String(i + 1).padStart(3, "0")}`, studentId, totalFee: 0, scholarshipAmount: 0, paidFee: 0, remainingFee: 0, status: "Paid"
+  }));
+  let students = loadData(STORAGE_KEYS.students, defaultStudents);
+  let feeRecords = loadData(STORAGE_KEYS.fees, defaultFees);
+  let editingStudentId = null;
+  let editingFeeId = null;
 
-        <tbody>
-            <tr>
-                <td>Merit Scholarship</td>
-                <td id="meritCount">0</td>
-            </tr>
+  const $ = (id) => document.getElementById(id);
+  const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
 
-            <tr>
-                <td>Need-Based Scholarship</td>
-                <td id="needBasedCount">0</td>
-            </tr>
+  function loadData(key, defaults) {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved === null) {
+        localStorage.setItem(key, JSON.stringify(defaults));
+        return structuredClone(defaults);
+      }
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : structuredClone(defaults);
+    } catch (error) {
+      console.warn("Could not read stored data; using demo data.", error);
+      return structuredClone(defaults);
+    }
+  }
+  function persist() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.students, JSON.stringify(students));
+      localStorage.setItem(STORAGE_KEYS.fees, JSON.stringify(feeRecords));
+      return true;
+    } catch (error) {
+      showMessage("Your browser could not save the latest changes. Check browser storage settings.", true);
+      console.error(error);
+      return false;
+    }
+  }
+  function showMessage(message, isError = false) {
+    const el = $("globalMessage");
+    el.textContent = message;
+    el.className = `message show ${isError ? "error" : "ok"}`;
+    if (!isError) window.setTimeout(() => { if (el.textContent === message) el.className = "message"; }, 4200);
+  }
+  function makeCell(text, className) {
+    const td = document.createElement("td");
+    td.textContent = text == null || text === "" ? "—" : String(text);
+    if (className) td.className = className;
+    return td;
+  }
+  function makeButton(label, className, handler) {
+    const button = document.createElement("button");
+    button.type = "button"; button.textContent = label;
+    if (className) button.className = className;
+    button.addEventListener("click", handler);
+    return button;
+  }
+  function makeInput(value, id, type = "text") {
+    const input = document.createElement("input");
+    input.id = id; input.type = type; input.value = value ?? ""; input.className = "inline-input";
+    if (type === "number") { input.min = "0"; input.step = "0.01"; }
+    return input;
+  }
+  function fillScholarshipSelect() {
+    const select = $("scholarshipType");
+    select.replaceChildren();
+    scholarshipTypes.forEach((type) => {
+      const option = document.createElement("option"); option.value = type; option.textContent = type; select.appendChild(option);
+    });
+  }
+  function renderStudents() {
+    const body = $("studentTableBody"); body.replaceChildren();
+    const query = $("searchStudent").value.trim().toLowerCase();
+    const shown = students.filter((student) => `${student.id} ${student.name}`.toLowerCase().includes(query));
+    if (shown.length === 0) {
+      const row = document.createElement("tr"); const cell = makeCell(query ? "No matching student records." : "No student records yet.");
+      cell.colSpan = 6; cell.className = "empty"; row.appendChild(cell); body.appendChild(row); updateDashboard(); return;
+    }
+    shown.forEach((student) => {
+      const row = document.createElement("tr");
+      if (editingStudentId === student.id) {
+        row.appendChild(makeCell(student.id));
+        const nameCell = document.createElement("td"); nameCell.appendChild(makeInput(student.name, `editName-${student.id}`)); row.appendChild(nameCell);
+        const phoneCell = document.createElement("td"); phoneCell.appendChild(makeInput(student.phone, `editPhone-${student.id}`)); row.appendChild(phoneCell);
+        const programCell = document.createElement("td");
+        const programSelect = document.createElement("select");
+        programSelect.id = `editProgram-${student.id}`;
+        programSelect.className = "inline-input";
+        ["Computer Science and Engineering", "Electronics and Communication Engineering", "Mechanical Engineering", "Information Technology", "Electrical and Electronics Engineering", "Other"].forEach((p) => { const op = document.createElement("option"); op.value = p; op.textContent = p; programSelect.appendChild(op); });
+        if (![...programSelect.options].some(o => o.value === student.programId)) { const op = document.createElement("option"); op.value = student.programId; op.textContent = student.programId; programSelect.appendChild(op); }
+        programSelect.value = student.programId; programCell.appendChild(programSelect); row.appendChild(programCell);
+        const scholarshipCell = document.createElement("td"); const scholarshipSelect = document.createElement("select"); scholarshipSelect.id = `editScholarship-${student.id}`;
+        scholarshipTypes.forEach((type) => { const op = document.createElement("option"); op.value = type; op.textContent = type; scholarshipSelect.appendChild(op); }); scholarshipSelect.value = student.scholarshipType || "No Scholarship"; scholarshipCell.appendChild(scholarshipSelect); row.appendChild(scholarshipCell);
+        const actionCell = document.createElement("td"); actionCell.className = "actions";
+        actionCell.append(makeButton("Save", "small success", () => saveStudentEdit(student.id)), makeButton("Cancel", "small secondary", () => { editingStudentId = null; renderStudents(); })); row.appendChild(actionCell);
+      } else {
+        row.append(makeCell(student.id), makeCell(student.name), makeCell(student.phone), makeCell(student.programId), makeCell(student.scholarshipType || "No Scholarship"));
+        const actionCell = document.createElement("td"); actionCell.className = "actions";
+        actionCell.append(makeButton("Edit", "small", () => { editingStudentId = student.id; renderStudents(); }), makeButton("Delete", "small danger", () => deleteStudent(student.id)));
+        row.appendChild(actionCell);
+      }
+      body.appendChild(row);
+    });
+    updateDashboard();
+  }
+  function saveStudentEdit(id) {
+    const student = students.find((s) => s.id === id); if (!student) return;
+    const name = $(`editName-${id}`).value.trim();
+    const phone = $(`editPhone-${id}`).value.trim();
+    const programId = $(`editProgram-${id}`).value.trim();
+    const scholarshipType = $(`editScholarship-${id}`).value;
+    if (!name || !phone || !programId) { showMessage("Name, phone and program are required.", true); return; }
+    if (!/^[+0-9() -]{7,15}$/.test(phone)) { showMessage("Enter a valid phone number (7–15 characters).", true); return; }
+    Object.assign(student, { name, phone, programId, scholarshipType });
+    editingStudentId = null; persist(); renderStudents(); renderScholarships(); renderScholarshipSummary(); updateDashboard(); showMessage(`Student ${id} updated successfully.`);
+  }
+  function deleteStudent(id) {
+    const linked = feeRecords.filter((fee) => fee.studentId === id).length;
+    const text = linked ? `Delete student ${id} and its ${linked} linked fee record(s)?` : `Delete student ${id}?`;
+    if (!window.confirm(text)) return;
+    students = students.filter((s) => s.id !== id);
+    feeRecords = feeRecords.filter((fee) => fee.studentId !== id);
+    if (editingStudentId === id) editingStudentId = null;
+    persist(); renderStudents(); renderFeeRecords(); renderScholarships(); renderScholarshipSummary(); updateDashboard(); showMessage(`Student ${id} deleted.`);
+  }
+  function addStudent(event) {
+    event.preventDefault();
+    const id = $("studentId").value.trim().toUpperCase();
+    const name = $("studentName").value.trim();
+    const phone = $("phone").value.trim();
+    const programId = $("programId").value;
+    const scholarshipType = $("scholarshipType").value;
+    if (students.some((s) => s.id.toLowerCase() === id.toLowerCase())) { showMessage(`Student ID ${id} already exists.`, true); return; }
+    if (!/^[A-Za-z0-9_-]{2,10}$/.test(id)) { showMessage("Student ID must be 2–10 letters, numbers, underscores or hyphens.", true); return; }
+    if (!name || !programId || !scholarshipType) { showMessage("Please complete all student fields.", true); return; }
+    if (!/^[+0-9() -]{7,15}$/.test(phone)) { showMessage("Enter a valid phone number (7–15 characters).", true); return; }
+    students.push({ id, name, phone, programId, scholarshipType }); persist(); $("studentForm").reset(); $("studentFormCard").classList.add("hidden"); renderStudents(); renderScholarships(); renderScholarshipSummary(); updateDashboard(); showMessage(`Student ${id} added successfully.`);
+  }
+  function renderScholarships() {
+    const body = $("scholarshipTableBody"); body.replaceChildren();
+    scholarshipCatalog.forEach((scholarship) => {
+      const row = document.createElement("tr");
+      row.append(makeCell(scholarship.id), makeCell(scholarship.name), makeCell(scholarship.eligibility));
+      const statusCell = document.createElement("td");
+      const assigned = students.filter((student) => (student.scholarshipType || "No Scholarship") === scholarship.name).length;
+      const state = document.createElement("span"); state.className = "scholarship-state"; state.textContent = scholarship.status;
+      const count = document.createElement("span"); count.className = "scholarship-assigned";
+      count.textContent = `${assigned} student${assigned === 1 ? "" : "s"} assigned`;
+      statusCell.append(state, count); row.appendChild(statusCell); body.appendChild(row);
+    });
+  }
+  function renderScholarshipSummary() {
+    const body = $("scholarshipSummaryBody"); body.replaceChildren();
+    scholarshipTypes.filter((t) => t !== "No Scholarship").forEach((type) => {
+      const count = students.filter((s) => (s.scholarshipType || "No Scholarship") === type).length;
+      const row = document.createElement("tr"); row.append(makeCell(type), makeCell(count)); body.appendChild(row);
+    });
+  }
+  function showScholarshipSummary() {
+    const section = $("scholarshipSummaryDetails"); section.classList.toggle("hidden");
+    if (!section.classList.contains("hidden")) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function remainingFor(fee) { return Math.max(0, Number(fee.totalFee) - Number(fee.scholarshipAmount) - Number(fee.paidFee)); }
+  function statusFor(fee) { return remainingFor(fee) === 0 ? "Paid" : "Pending"; }
+  function renderFeeRecords() {
+    const body = $("feeTableBody"); body.replaceChildren();
+    if (feeRecords.length === 0) { const row = document.createElement("tr"); const cell = makeCell("No fee records yet."); cell.colSpan = 7; cell.className = "empty"; row.appendChild(cell); body.appendChild(row); updateDashboard(); return; }
+    feeRecords.forEach((fee) => {
+      const row = document.createElement("tr");
+      if (editingFeeId === fee.feeId) {
+        row.appendChild(makeCell(fee.studentId));
+        const totalCell = document.createElement("td"); totalCell.appendChild(makeInput(fee.totalFee, `feeTotal-${fee.feeId}`, "number")); row.appendChild(totalCell);
+        const scholarshipCell = document.createElement("td"); scholarshipCell.appendChild(makeInput(fee.scholarshipAmount, `feeScholarship-${fee.feeId}`, "number")); row.appendChild(scholarshipCell);
+        const paidCell = document.createElement("td"); paidCell.appendChild(makeInput(fee.paidFee, `feePaid-${fee.feeId}`, "number")); row.appendChild(paidCell);
+        row.appendChild(makeCell(money.format(remainingFor(fee)))); row.appendChild(makeCell(statusFor(fee)));
+        const actions = document.createElement("td"); actions.className = "actions"; actions.append(makeButton("Save", "small success", () => saveFeeEdit(fee.feeId)), makeButton("Cancel", "small secondary", () => { editingFeeId = null; renderFeeRecords(); })); row.appendChild(actions);
+      } else {
+        row.append(makeCell(fee.studentId), makeCell(money.format(Number(fee.totalFee))), makeCell(money.format(Number(fee.scholarshipAmount))), makeCell(money.format(Number(fee.paidFee))), makeCell(money.format(remainingFor(fee))));
+        const statusCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = `status ${statusFor(fee).toLowerCase()}`; badge.textContent = statusFor(fee); statusCell.appendChild(badge); row.appendChild(statusCell);
+        const actions = document.createElement("td"); actions.className = "actions"; actions.append(makeButton("Edit", "small", () => { editingFeeId = fee.feeId; renderFeeRecords(); })); row.appendChild(actions);
+      }
+      body.appendChild(row);
+    });
+    updateDashboard();
+  }
+  function nextFeeId() {
+    let max = 0;
+    feeRecords.forEach((fee) => { const match = String(fee.feeId).match(/^F(\d+)$/i); if (match) max = Math.max(max, Number(match[1])); });
+    let candidate; do { candidate = `F${String(++max).padStart(3, "0")}`; } while (feeRecords.some((f) => f.feeId === candidate));
+    return candidate;
+  }
+  function readMoney(id) { const raw = $(id).value; if (raw.trim() === "") return NaN; return Number(raw); }
+  function validateFeeAmounts(totalFee, scholarshipAmount, paidFee) {
+    if (![totalFee, scholarshipAmount, paidFee].every((n) => Number.isFinite(n) && n >= 0)) { showMessage("Enter valid, non-negative amounts for all fee fields.", true); return false; }
+    if (scholarshipAmount > totalFee) { showMessage("Scholarship amount cannot exceed the total fee.", true); return false; }
+    if (paidFee + scholarshipAmount > totalFee) { showMessage("Paid fee plus scholarship cannot exceed the total fee.", true); return false; }
+    return true;
+  }
+  function addFeeRecord(event) {
+    event.preventDefault();
+    const studentId = $("feeStudentId").value.trim().toUpperCase();
+    const student = students.find((s) => s.id.toUpperCase() === studentId);
+    if (!student) { showMessage(`Student ${studentId || "ID"} was not found. Add the student first or check the ID.`, true); return; }
+    const totalFee = readMoney("totalFee"), scholarshipAmount = readMoney("scholarshipAmount"), paidFee = readMoney("paidFee");
+    if (!validateFeeAmounts(totalFee, scholarshipAmount, paidFee)) return;
+    const fee = { feeId: nextFeeId(), studentId: student.id, totalFee, scholarshipAmount, paidFee, remainingFee: totalFee - scholarshipAmount - paidFee };
+    fee.status = fee.remainingFee === 0 ? "Paid" : "Pending";
+    feeRecords.push(fee); persist(); $("feeForm").reset(); $("scholarshipAmount").value = "0"; $("paidFee").value = "0"; renderFeeRecords(); showMessage(`Fee record ${fee.feeId} added successfully.`);
+  }
+  function saveFeeEdit(feeId) {
+    const fee = feeRecords.find((f) => f.feeId === feeId); if (!fee) return;
+    const totalFee = readMoney(`feeTotal-${feeId}`), scholarshipAmount = readMoney(`feeScholarship-${feeId}`), paidFee = readMoney(`feePaid-${feeId}`);
+    if (!validateFeeAmounts(totalFee, scholarshipAmount, paidFee)) return;
+    Object.assign(fee, { totalFee, scholarshipAmount, paidFee }); fee.remainingFee = remainingFor(fee); fee.status = statusFor(fee);
+    editingFeeId = null; persist(); renderFeeRecords(); showMessage(`Fee record ${feeId} updated successfully.`);
+  }
+  function updateDashboard() {
+    $("totalStudents").textContent = students.length;
+    $("totalScholarshipStudents").textContent = students.filter((s) => s.scholarshipType && s.scholarshipType !== "No Scholarship").length;
+    $("totalFeeRecords").textContent = feeRecords.length;
+    $("pendingPayments").textContent = feeRecords.filter((f) => remainingFor(f) > 0).length;
+  }
 
-            <tr>
-                <td>Sports Scholarship</td>
-                <td id="sportsCount">0</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-    <div class="card">
-    <h2>Scholarship Management</h2>
+  const introScreen = $("introScreen");
+  $("enterDashboardBtn").addEventListener("click", () => {
+    introScreen.classList.add("is-leaving");
+    window.scrollTo({ top: 0, behavior: "auto" });
+    window.setTimeout(() => introScreen.remove(), 450);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && introScreen && introScreen.isConnected) {
+      introScreen.classList.add("is-leaving");
+      window.setTimeout(() => { if (introScreen.isConnected) introScreen.remove(); }, 450);
+    }
+  });
 
-    <p>Manage scholarship information for students.</p>
+  fillScholarshipSelect();
+  renderStudents(); renderFeeRecords(); renderScholarships(); renderScholarshipSummary();
+  $("showStudentFormBtn").addEventListener("click", () => { editingStudentId = null; $("studentFormTitle").textContent = "Add New Student"; $("studentId").disabled = false; $("studentForm").reset(); $("studentFormCard").classList.remove("hidden"); $("studentId").focus(); });
+  $("cancelStudentFormBtn").addEventListener("click", () => { $("studentForm").reset(); $("studentFormCard").classList.add("hidden"); });
+  $("studentForm").addEventListener("submit", addStudent);
+  $("searchStudent").addEventListener("input", renderStudents);
+  $("feeForm").addEventListener("submit", addFeeRecord);
+  $("toggleScholarshipsBtn").addEventListener("click", () => {
+    const wrap = $("scholarshipTableWrap"); const isHidden = wrap.classList.toggle("hidden");
+    $("toggleScholarshipsBtn").textContent = isHidden ? "View Scholarships" : "Hide Scholarships";
+    $("scholarshipMessage").textContent = isHidden ? "" : `Showing all ${scholarshipCatalog.length} scholarship records.`;
+  });
+  $("scholarshipSummaryCard").addEventListener("click", showScholarshipSummary);
+  $("scholarshipSummaryCard").addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); showScholarshipSummary(); } });
 
-    <button onclick="showScholarshipMessage()">
-        View Scholarships
-    </button>
-
-    <p id="scholarshipMessage"></p>
-    <table id="scholarshipTable" style="display: none;">
-    <thead>
-        <tr>
-            <th>Scholarship ID</th>
-            <th>Student ID</th>
-            <th>Student Name</th>
-            <th>Scholarship Type</th>
-            <th>Amount</th>
-        </tr>
-    </thead>
-
-    <tbody id="scholarshipTableBody">
-        <tr>
-            <td colspan="5">No scholarship records yet.</td>
-        </tr>
-    </tbody>
-</table>
-</div>
-<!-- Application Management -->
-<div class="card">
-    <h2>Application Management</h2>
-    <p>Submit and manage scholarship applications.</p>
-
-    <form id="applicationForm" onsubmit="addApplication(event)">
-        <label for="applicationId">Application ID:</label>
-        <input type="text" id="applicationId" maxlength="10" readonly required>
-
-        <label for="applicationStudentId">Student ID:</label>
-        <input type="text" id="applicationStudentId" maxlength="10" required>
-
-        <label for="applicationDate">Application Date:</label>
-        <input type="date" id="applicationDate" required>
-
-        <button type="submit">Submit Application</button>
-    </form>
-
-    <p id="applicationMessage"></p>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Application ID</th>
-                <th>Student ID</th>
-                <th>Student Name</th>
-                <th>Application Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="applicationTableBody">
-            <tr>
-                <td colspan="6">No applications yet.</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- Fee Management -->
-<div class="card">
-    <h2>Fee Management</h2>
-    <h3>Add Fee Record</h3>
-
-    <form id="feeForm" onsubmit="addFeeRecord(event)">
-        <label for="feeId">Fee ID:</label>
-        <input type="text" id="feeId" maxlength="10" readonly required>
-
-        <label for="feeStudentId">Student ID:</label>
-        <input type="text" id="feeStudentId" required>
-
-        <label for="totalFee">Fee Amount:</label>
-        <input type="number" id="totalFee" min="0" step="0.01" required>
-
-        <label for="dueDate">Due Date:</label>
-        <input type="date" id="dueDate" required>
-
-        <button type="submit">Add Fee Record</button>
-    </form>
-
-    <p>View student fee details.</p>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Fee Amount</th>
-                <th>Due Date</th>
-                <th>Paid Fee</th>
-                <th>Outstanding</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody id="feeTableBody">
-            <tr>
-                <td colspan="7">No fee records yet.</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-    <!-- Payment Management -->
-    <div class="card">
-        <h2>Payment Management</h2>
-        <p>Record and view fee payments.</p>
-
-        <form id="paymentForm" onsubmit="addPayment(event)">
-            <label for="paymentId">Payment ID:</label>
-            <input type="text" id="paymentId" maxlength="10" readonly required>
-
-            <label for="paymentFeeId">Fee ID:</label>
-            <input type="text" id="paymentFeeId" maxlength="10" required>
-
-            <label for="paymentMethodId">Payment Method:</label>
-            <select id="paymentMethodId" required>
-                <option value="">Select Payment Method</option>
-                <option value="M01">UPI</option>
-                <option value="M02">Net Banking</option>
-                <option value="M03">Credit Card</option>
-                <option value="M04">Debit Card</option>
-            </select>
-
-            <label for="paymentDate">Payment Date:</label>
-            <input type="date" id="paymentDate" required>
-
-            <label for="amountPaid">Amount Paid:</label>
-            <input type="number" id="amountPaid" min="0" step="0.01" required>
-
-            <label for="transactionId">Transaction ID:</label>
-            <input type="text" id="transactionId" maxlength="30" readonly required>
-
-            <label for="paymentScholarshipId">Scholarship ID (optional):</label>
-            <input type="text" id="paymentScholarshipId" maxlength="10">
-
-            <button type="submit">Record Payment</button>
-        </form>
-
-        <p id="paymentMessage"></p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Payment ID</th>
-                    <th>Fee ID</th>
-                    <th>Student ID</th>
-                    <th>Student Name</th>
-                    <th>Method</th>
-                    <th>Payment Date</th>
-                    <th>Amount Paid</th>
-                    <th>Transaction ID</th>
-                </tr>
-            </thead>
-            <tbody id="paymentTableBody">
-                <tr>
-                    <td colspan="8">No payment records yet.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-
-<!-- Disbursement Management -->
-<div class="card">
-    <h2>Disbursement Management</h2>
-    <p>Record and view scholarship disbursements.</p>
-
-    <form id="disbursementForm" onsubmit="addDisbursement(event)">
-        <label for="disbursementId">Disbursement ID:</label>
-        <input type="text" id="disbursementId" maxlength="10" readonly required>
-
-        <label for="disbursementScholarshipId">Scholarship ID:</label>
-        <select id="disbursementScholarshipId" required>
-            <option value="">Select Scholarship</option>
-        </select>
-
-        <label for="disbursementAccountNo">Account No:</label>
-        <input
-            type="text"
-            id="disbursementAccountNo"
-            maxlength="20"
-            placeholder="e.g. AC001"
-            required
-        >
-
-        <label for="disbursementDate">Disbursement Date:</label>
-        <input type="date" id="disbursementDate" required>
-
-        <label for="disbursementAmount">Amount:</label>
-        <input type="number" id="disbursementAmount" min="0" step="0.01" required>
-
-        <label for="disbursementMode">Disbursement Mode:</label>
-        <select id="disbursementMode" required>
-            <option value="">Select Mode</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Direct Transfer">Direct Transfer</option>
-        </select>
-
-        <button type="submit">Record Disbursement</button>
-    </form>
-
-    <p id="disbursementMessage"></p>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Disbursement ID</th>
-                <th>Scholarship ID</th>
-                <th>Student ID</th>
-                <th>Student Name</th>
-                <th>Account No</th>
-                <th>Bank</th>
-                <th>Amount</th>
-                <th>Mode</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody id="disbursementTableBody">
-            <tr>
-                <td colspan="9">No disbursement records yet.</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-    <script>
-        const API_BASE = "http://127.0.0.1:5000";
-
-        let students = [];
-        let scholarships = [];
-        let feeRecords = [];
-
-        async function fetchAPI(endpoint, options = {}) {
-            try {
-                const response = await fetch(`${API_BASE}${endpoint}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(options.headers || {})
-                    },
-                    ...options
-                });
-
-                const contentType = response.headers.get("content-type") || "";
-                const data = contentType.includes("application/json")
-                    ? await response.json()
-                    : await response.text();
-
-                if (!response.ok) {
-                    const message = typeof data === "object" && data?.error
-                        ? data.error
-                        : "API request failed";
-                    throw new Error(message);
-                }
-
-                return data;
-            } catch (error) {
-                console.error("API Error:", error);
-                alert(error.message || "Unable to connect to the Flask API.");
-                throw error;
-            }
+  // Sidebar navigation only changes the view/scroll position; it does not alter data logic.
+  document.querySelectorAll("[data-target]").forEach((item) => {
+    item.addEventListener("click", () => {
+      const targetName = item.dataset.target;
+      document.querySelectorAll(".side-link").forEach((link) => {
+        link.classList.toggle("active", link === item);
+        link.setAttribute("aria-current", link === item ? "page" : "false");
+      });
+      if (targetName === "scholarships") {
+        const wrap = $("scholarshipTableWrap");
+        if (wrap.classList.contains("hidden")) {
+          wrap.classList.remove("hidden");
+          $("toggleScholarshipsBtn").textContent = "Hide Scholarships";
+          $("scholarshipMessage").textContent = `Showing all ${scholarshipCatalog.length} scholarship records.`;
         }
-
-        function formatCurrency(value) {
-            const number = Number(value || 0);
-            return `₹${number.toLocaleString("en-IN", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-            })}`;
-        }
-
-        function formatDate(value) {
-            if (!value) return "-";
-            const text = String(value);
-            if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
-            const date = new Date(value);
-            return Number.isNaN(date.getTime()) ? text : date.toLocaleDateString("en-IN");
-        }
-
-        function todayISO() {
-            const now = new Date();
-            const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-            return local.toISOString().slice(0, 10);
-        }
-
-        function generateFeeId() {
-            const suffix = Date.now().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(-8);
-            return `F${suffix}`.slice(0, 10);
-        }
-
-        function generatePaymentId() {
-            const suffix = Date.now().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(-7);
-            return `PAY${suffix}`.slice(0, 10);
-        }
-
-        function generateTransactionId() {
-            return `TXN${Date.now()}`;
-        }
-
-        function showStudentForm() {
-            document.getElementById("studentForm").style.display = "block";
-        }
-
-        function hideStudentForm() {
-            document.getElementById("studentForm").style.display = "none";
-        }
-
-        async function loadDashboard() {
-            try {
-                const data = await fetchAPI("/api/dashboard");
-
-                document.getElementById("totalStudents").textContent = data.total_students ?? 0;
-                document.getElementById("totalScholarshipStudents").textContent = data.total_scholarships ?? 0;
-                document.getElementById("totalFeeRecords").textContent = formatCurrency(data.total_fees);
-                document.getElementById("pendingPayments").textContent = formatCurrency(data.total_outstanding);
-
-                document.getElementById("applicationSummary").textContent =
-                    `Approved: ${data.approved_applications ?? 0} | Pending: ${data.pending_applications ?? 0}`;
-                document.getElementById("scholarshipAmountSummary").textContent =
-                    `Amount: ${formatCurrency(data.total_scholarship_amount)}`;
-                document.getElementById("paidFeeSummary").textContent =
-                    `Paid: ${formatCurrency(data.total_paid)}`;
-            } catch (error) {
-                console.error("Failed to load dashboard:", error);
-            }
-        }
-
-        async function loadScholarships() {
-            try {
-                scholarships = await fetchAPI("/api/scholarships");
-
-                const scholarshipTable = document.getElementById("scholarshipTableBody");
-                scholarshipTable.innerHTML = "";
-
-                if (!Array.isArray(scholarships) || scholarships.length === 0) {
-                    scholarshipTable.innerHTML = `
-                        <tr><td colspan="5">No scholarship records yet.</td></tr>
-                    `;
-                } else {
-                    scholarships.forEach((scholarship) => {
-                        scholarshipTable.innerHTML += `
-                            <tr>
-                                <td>${scholarship.SCHOLARSHIPID ?? "-"}</td>
-                                <td>${scholarship.STUDENTID ?? "-"}</td>
-                                <td>${scholarship.STUDENTNAME ?? "-"}</td>
-                                <td>${scholarship.SCHOLARSHIPTYPE ?? "-"}</td>
-                                <td>${formatCurrency(scholarship.AMOUNT)}</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                updateStudentScholarships();
-                updateScholarshipSummary();
-                populateDisbursementScholarships();
-            } catch (error) {
-                console.error("Failed to load scholarships:", error);
-            }
-        }
-
-        function updateStudentScholarships() {
-            const scholarshipMap = new Map();
-
-            scholarships.forEach((scholarship) => {
-                const studentId = scholarship.STUDENTID;
-                if (studentId) {
-                    scholarshipMap.set(String(studentId), canonicalScholarshipType(scholarship.SCHOLARSHIPTYPE));
-                }
-            });
-
-            students = students.map((student) => ({
-                ...student,
-                scholarshipType: scholarshipMap.get(String(student.id)) || "No Scholarship"
-            }));
-
-            displayStudents(false);
-        }
-
-        function canonicalScholarshipType(type) {
-            const key = String(type || "").toLowerCase().replace(/[^a-z]/g, "");
-
-            if (key === "meritscholarship") return "Merit Scholarship";
-            if (key === "needbasedscholarship") return "Need-Based Scholarship";
-            if (key === "sportsscholarship") return "Sports Scholarship";
-
-            return String(type || "No Scholarship");
-        }
-
-        function updateScholarshipSummary() {
-            const counts = {
-                "Merit Scholarship": 0,
-                "Need-Based Scholarship": 0,
-                "Sports Scholarship": 0
-            };
-
-            scholarships.forEach((scholarship) => {
-                const type = canonicalScholarshipType(scholarship.SCHOLARSHIPTYPE);
-                if (Object.prototype.hasOwnProperty.call(counts, type)) {
-                    counts[type] += 1;
-                }
-            });
-
-            document.getElementById("meritCount").textContent = counts["Merit Scholarship"];
-            document.getElementById("needBasedCount").textContent = counts["Need-Based Scholarship"];
-            document.getElementById("sportsCount").textContent = counts["Sports Scholarship"];
-        }
-
-        function showScholarshipMessage() {
-            document.getElementById("scholarshipMessage").textContent =
-                scholarships.length ? "Scholarships loaded from the Flask API." : "No scholarship records found.";
-            document.getElementById("scholarshipTable").style.display = "table";
-        }
-
-        function showScholarshipSummary() {
-            const details = document.getElementById("scholarshipSummaryDetails");
-
-            if (details.style.display === "none" || details.style.display === "") {
-                details.style.display = "block";
-                details.scrollIntoView({ behavior: "smooth", block: "start" });
-            } else {
-                details.style.display = "none";
-            }
-        }
-
-        function generateApplicationId() {
-            const suffix = Date.now()
-                .toString(36)
-                .toUpperCase()
-                .replace(/[^A-Z0-9]/g, "")
-                .slice(-7);
-
-            return `APP${suffix}`.slice(0, 10);
-        }
-
-        async function loadApplications() {
-            try {
-                const data = await fetchAPI("/api/applications");
-                const applications = Array.isArray(data) ? data : [];
-                const tableBody = document.getElementById("applicationTableBody");
-
-                tableBody.innerHTML = "";
-
-                if (applications.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="6">No applications yet.</td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                applications.forEach((application) => {
-                    const applicationId = String(application.APPLICATIONID ?? "");
-                    const status = application.APPLICATIONSTATUS ?? "-";
-
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${application.APPLICATIONID ?? "-"}</td>
-                        <td>${application.STUDENTID ?? "-"}</td>
-                        <td>${application.STUDENTNAME ?? "-"}</td>
-                        <td>${formatDate(application.APPLICATIONDATE)}</td>
-                        <td>${status}</td>
-                        <td>
-                            <button type="button"
-                                onclick="updateApplicationStatus('${applicationId.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', 'Approved')">
-                                Approve
-                            </button>
-                            <button type="button"
-                                class="delete-btn"
-                                onclick="updateApplicationStatus('${applicationId.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', 'Rejected')">
-                                Reject
-                            </button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            } catch (error) {
-                console.error("Failed to load applications:", error);
-            }
-        }
-
-        async function addApplication(event) {
-            event.preventDefault();
-
-            const applicationId = document.getElementById("applicationId").value.trim();
-            const studentId = document.getElementById("applicationStudentId").value.trim();
-            const applicationDate = document.getElementById("applicationDate").value;
-
-            if (!studentId) {
-                alert("Student ID is required.");
-                return;
-            }
-
-            if (!applicationDate) {
-                alert("Application date is required.");
-                return;
-            }
-
-            try {
-                const result = await fetchAPI("/api/applications", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        application_id: applicationId,
-                        student_id: studentId,
-                        application_date: applicationDate
-                    })
-                });
-
-                document.getElementById("applicationMessage").textContent =
-                    result.message || "Scholarship application submitted successfully.";
-
-                document.getElementById("applicationForm").reset();
-                document.getElementById("applicationId").value = generateApplicationId();
-                document.getElementById("applicationDate").value = todayISO();
-
-                await Promise.all([
-                    loadApplications(),
-                    loadDashboard()
-                ]);
-            } catch (error) {
-                console.error("Failed to submit application:", error);
-            }
-        }
-
-        async function updateApplicationStatus(applicationId, status) {
-            if (!applicationId) return;
-
-            try {
-                const result = await fetchAPI(
-                    `/api/applications/${encodeURIComponent(applicationId)}/status`,
-                    {
-                        method: "PUT",
-                        body: JSON.stringify({ status })
-                    }
-                );
-
-                document.getElementById("applicationMessage").textContent =
-                    result.message || "Application status updated successfully.";
-
-                await Promise.all([
-                    loadApplications(),
-                    loadScholarships(),
-                    loadDashboard()
-                ]);
-            } catch (error) {
-                console.error("Failed to update application status:", error);
-            }
-        }
-
-        async function loadStudents() {
-            try {
-                const data = await fetchAPI("/api/students");
-
-                students = (Array.isArray(data) ? data : []).map((student) => ({
-                    id: student.STUDENTID,
-                    name: student.STUDENTNAME,
-                    phone: student.PHONE,
-                    programId: student.PROGRAMNAME,
-                    scholarshipType: "No Scholarship"
-                }));
-
-                updateStudentScholarships();
-            } catch (error) {
-                console.error("Failed to load students:", error);
-            }
-        }
-
-        async function addStudent(event) {
-            event.preventDefault();
-
-            const student = {
-                student_id: document.getElementById("studentId").value.trim(),
-                student_name: document.getElementById("studentName").value.trim(),
-                phone: document.getElementById("phone").value.trim(),
-                program_id: document.getElementById("programId").value.trim()
-            };
-
-            try {
-                const result = await fetchAPI("/api/students", {
-                    method: "POST",
-                    body: JSON.stringify(student)
-                });
-
-                alert(result.message || "Student added successfully.");
-                document.querySelector("#studentForm form").reset();
-                hideStudentForm();
-
-                await loadStudents();
-                await loadDashboard();
-            } catch (error) {
-                console.error("Failed to add student:", error);
-            }
-        }
-
-        function displayStudents(refreshDashboard = true) {
-            const tableBody = document.getElementById("studentTableBody");
-            tableBody.innerHTML = "";
-
-            if (students.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6">No student records yet.</td>
-                    </tr>
-                `;
-                if (refreshDashboard) loadDashboard();
-                return;
-            }
-
-            students.forEach(function(student, index) {
-                const row = document.createElement("tr");
-
-                row.innerHTML = `
-                    <td>${student.id ?? "-"}</td>
-                    <td>${student.name ?? "-"}</td>
-                    <td>${student.phone ?? "-"}</td>
-                    <td>${student.programId ?? "-"}</td>
-                    <td>${student.scholarshipType || "No Scholarship"}</td>
-                    <td>
-                        <button type="button" onclick="viewStudent(${index})">View</button>
-                    </td>
-                `;
-
-                tableBody.appendChild(row);
-            });
-
-            if (refreshDashboard) loadDashboard();
-        }
-
-        async function viewStudent(index) {
-            const student = students[index];
-            if (!student?.id) return;
-
-            try {
-                const studentId = encodeURIComponent(student.id);
-                const [data, studentScholarships, studentFees, studentPayments] = await Promise.all([
-                    fetchAPI(`/api/students/${studentId}`),
-                    fetchAPI(`/api/students/${studentId}/scholarships`),
-                    fetchAPI(`/api/students/${studentId}/fees`),
-                    fetchAPI(`/api/students/${studentId}/payments`)
-                ]);
-
-                const scholarshipsCount = Array.isArray(studentScholarships) ? studentScholarships.length : 0;
-                const feesCount = Array.isArray(studentFees) ? studentFees.length : 0;
-                const paymentsCount = Array.isArray(studentPayments) ? studentPayments.length : 0;
-
-                alert(
-                    `Student ID: ${data.STUDENTID ?? student.id}\n` +
-                    `Name: ${data.STUDENTNAME ?? student.name}\n` +
-                    `Phone: ${data.PHONE ?? student.phone}\n` +
-                    `Program: ${data.PROGRAMNAME ?? student.programId}\n\n` +
-                    `Scholarship Records: ${scholarshipsCount}\n` +
-                    `Fee Records: ${feesCount}\n` +
-                    `Payment Records: ${paymentsCount}`
-                );
-            } catch (error) {
-                console.error("Failed to load student details:", error);
-            }
-        }
-
-        function searchStudents() {
-            const searchText = document.getElementById("searchStudent").value.toLowerCase().trim();
-            const filteredStudents = students.filter((student) =>
-                String(student.id || "").toLowerCase().includes(searchText) ||
-                String(student.name || "").toLowerCase().includes(searchText)
-            );
-
-            const tableBody = document.getElementById("studentTableBody");
-            tableBody.innerHTML = "";
-
-            filteredStudents.forEach((student) => {
-                const originalIndex = students.indexOf(student);
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${student.id ?? "-"}</td>
-                        <td>${student.name ?? "-"}</td>
-                        <td>${student.phone ?? "-"}</td>
-                        <td>${student.programId ?? "-"}</td>
-                        <td>${student.scholarshipType || "No Scholarship"}</td>
-                        <td><button type="button" onclick="viewStudent(${originalIndex})">View</button></td>
-                    </tr>
-                `;
-            });
-
-            if (filteredStudents.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6">No matching student records.</td></tr>`;
-            }
-        }
-
-        async function loadFees() {
-            try {
-                const data = await fetchAPI("/api/fees");
-                feeRecords = Array.isArray(data) ? data : [];
-                displayFeeRecords();
-            } catch (error) {
-                console.error("Failed to load fees:", error);
-            }
-        }
-
-        function displayFeeRecords() {
-            const tableBody = document.getElementById("feeTableBody");
-            tableBody.innerHTML = "";
-
-            if (feeRecords.length === 0) {
-                tableBody.innerHTML = `
-                    <tr><td colspan="7">No fee records yet.</td></tr>
-                `;
-                return;
-            }
-
-            feeRecords.forEach((record) => {
-                const outstanding = Number(record.OUTSTANDINGAMOUNT || 0);
-                const paid = Number(record.AMOUNTPAID || 0);
-                const fee = Number(record.FEEAMOUNT || 0);
-                const status = outstanding === 0 ? "Paid" : "Pending";
-
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${record.STUDENTID ?? "-"}</td>
-                    <td>${formatCurrency(fee)}</td>
-                    <td>${formatDate(record.DUEDATE)}</td>
-                    <td>${formatCurrency(paid)}</td>
-                    <td>${formatCurrency(outstanding)}</td>
-                    <td>${status}</td>
-                    <td>
-                        <button type="button" onclick="viewFee('${String(record.FEEID ?? "").replace(/'/g, "\\'")}')">View</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        function viewFee(feeId) {
-            const record = feeRecords.find((fee) => String(fee.FEEID) === String(feeId));
-            if (!record) return;
-
-            alert(
-                `Fee ID: ${record.FEEID}\n` +
-                `Student: ${record.STUDENTID} - ${record.STUDENTNAME}\n` +
-                `Fee Amount: ${formatCurrency(record.FEEAMOUNT)}\n` +
-                `Due Date: ${formatDate(record.DUEDATE)}\n` +
-                `Paid: ${formatCurrency(record.AMOUNTPAID)}\n` +
-                `Outstanding: ${formatCurrency(record.OUTSTANDINGAMOUNT)}`
-            );
-        }
-
-        async function addFeeRecord(event) {
-            event.preventDefault();
-
-            const feeId = document.getElementById("feeId").value.trim() || generateFeeId();
-            const studentId = document.getElementById("feeStudentId").value.trim();
-            const feeAmount = Number(document.getElementById("totalFee").value);
-            const dueDate = document.getElementById("dueDate").value;
-
-            if (!studentId) {
-                alert("Student ID is required.");
-                return;
-            }
-
-            if (!Number.isFinite(feeAmount) || feeAmount < 0) {
-                alert("Fee amount cannot be negative and must be a valid number.");
-                return;
-            }
-
-            if (!dueDate) {
-                alert("Due date is required.");
-                return;
-            }
-
-            try {
-                const result = await fetchAPI("/api/fees", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        fee_id: feeId,
-                        student_id: studentId,
-                        fee_amount: feeAmount,
-                        due_date: dueDate
-                    })
-                });
-
-                alert(result.message || "Student fee created successfully.");
-                document.getElementById("feeForm").reset();
-                document.getElementById("feeId").value = generateFeeId();
-                document.getElementById("dueDate").value = todayISO();
-
-                await loadFees();
-                await loadDashboard();
-            } catch (error) {
-                console.error("Failed to add fee:", error);
-            }
-        }
-
-        async function loadPayments() {
-            try {
-                const data = await fetchAPI("/api/payments");
-                const payments = Array.isArray(data) ? data : [];
-                const tableBody = document.getElementById("paymentTableBody");
-                tableBody.innerHTML = "";
-
-                if (payments.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr><td colspan="8">No payment records yet.</td></tr>
-                    `;
-                    return;
-                }
-
-                payments.forEach((payment) => {
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>${payment.PAYMENTID ?? "-"}</td>
-                            <td>${payment.FEEID ?? "-"}</td>
-                            <td>${payment.STUDENTID ?? "-"}</td>
-                            <td>${payment.STUDENTNAME ?? "-"}</td>
-                            <td>${payment.METHODNAME ?? "-"}</td>
-                            <td>${formatDate(payment.PAYMENTDATE)}</td>
-                            <td>${formatCurrency(payment.AMOUNTPAID)}</td>
-                            <td>${payment.TRANSACTIONID ?? "-"}</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error("Failed to load payments:", error);
-            }
-        }
-
-        async function addPayment(event) {
-            event.preventDefault();
-
-            const paymentId = document.getElementById("paymentId").value.trim() || generatePaymentId();
-            const feeId = document.getElementById("paymentFeeId").value.trim();
-            const methodId = document.getElementById("paymentMethodId").value;
-            const paymentDate = document.getElementById("paymentDate").value;
-            const amountPaid = Number(document.getElementById("amountPaid").value);
-            const transactionId = document.getElementById("transactionId").value.trim() || generateTransactionId();
-            const scholarshipId = document.getElementById("paymentScholarshipId").value.trim();
-
-            if (!feeId) {
-                alert("Fee ID is required.");
-                return;
-            }
-
-            if (!methodId) {
-                alert("Please select a payment method.");
-                return;
-            }
-
-            if (!paymentDate) {
-                alert("Payment date is required.");
-                return;
-            }
-
-            if (!Number.isFinite(amountPaid) || amountPaid < 0) {
-                alert("Amount paid must be a valid non-negative number.");
-                return;
-            }
-
-            try {
-                const payload = {
-                    payment_id: paymentId,
-                    fee_id: feeId,
-                    method_id: methodId,
-                    payment_date: paymentDate,
-                    amount_paid: amountPaid,
-                    transaction_id: transactionId
-                };
-
-                if (scholarshipId) {
-                    payload.scholarship_id = scholarshipId;
-                }
-
-                const result = await fetchAPI("/api/payments", {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
-
-                document.getElementById("paymentMessage").textContent =
-                    result.message || "Fee payment recorded successfully.";
-
-                document.getElementById("paymentForm").reset();
-                document.getElementById("paymentId").value = generatePaymentId();
-                document.getElementById("transactionId").value = generateTransactionId();
-                document.getElementById("paymentDate").value = todayISO();
-
-                await Promise.all([
-                    loadPayments(),
-                    loadFees(),
-                    loadDashboard()
-                ]);
-            } catch (error) {
-                console.error("Failed to add payment:", error);
-            }
-        }
-
-
-        function generateDisbursementId() {
-            const suffix = Date.now()
-                .toString(36)
-                .toUpperCase()
-                .replace(/[^A-Z0-9]/g, "")
-                .slice(-7);
-            return `DIS${suffix}`.slice(0, 10);
-        }
-
-        function populateDisbursementScholarships() {
-            const select = document.getElementById("disbursementScholarshipId");
-            if (!select) return;
-
-            const currentValue = select.value;
-            select.innerHTML = '<option value="">Select Scholarship</option>';
-
-            scholarships.forEach((scholarship) => {
-                const option = document.createElement("option");
-                option.value = scholarship.SCHOLARSHIPID ?? "";
-                option.textContent = `${scholarship.SCHOLARSHIPID ?? "-"} - ${scholarship.SCHOLARSHIPTYPE ?? "Scholarship"}`;
-                select.appendChild(option);
-            });
-
-            if (currentValue && scholarships.some((s) => String(s.SCHOLARSHIPID) === currentValue)) {
-                select.value = currentValue;
-            }
-        }
-
-        async function loadDisbursements() {
-            try {
-                const data = await fetchAPI("/api/disbursements");
-                const disbursements = Array.isArray(data) ? data : [];
-                const tableBody = document.getElementById("disbursementTableBody");
-
-                tableBody.innerHTML = "";
-
-                if (disbursements.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr><td colspan="9">No disbursement records yet.</td></tr>
-                    `;
-                    return;
-                }
-
-                disbursements.forEach((disbursement) => {
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>${disbursement.DISBURSEMENTID ?? "-"}</td>
-                            <td>${disbursement.SCHOLARSHIPID ?? "-"}</td>
-                            <td>${disbursement.STUDENTID ?? "-"}</td>
-                            <td>${disbursement.STUDENTNAME ?? "-"}</td>
-                            <td>${disbursement.ACCOUNTNO ?? "-"}</td>
-                            <td>${disbursement.BANKNAME ?? "-"}</td>
-                            <td>${formatCurrency(disbursement.AMOUNT)}</td>
-                            <td>${disbursement.DISBURSEMENTMODE ?? "-"}</td>
-                            <td>${formatDate(disbursement.DISBURSEMENTDATE)}</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error("Failed to load disbursements:", error);
-            }
-        }
-
-        async function addDisbursement(event) {
-            event.preventDefault();
-
-            const disbursementId =
-                document.getElementById("disbursementId").value.trim() || generateDisbursementId();
-            const scholarshipId =
-                document.getElementById("disbursementScholarshipId").value;
-            const accountNo =
-                document.getElementById("disbursementAccountNo").value.trim();
-            const disbursementDate =
-                document.getElementById("disbursementDate").value;
-            const amount = Number(
-                document.getElementById("disbursementAmount").value
-            );
-            const disbursementMode =
-                document.getElementById("disbursementMode").value;
-
-            if (!scholarshipId) {
-                alert("Scholarship ID is required.");
-                return;
-            }
-
-            if (!accountNo) {
-                alert("Account number is required.");
-                return;
-            }
-
-            if (!disbursementDate) {
-                alert("Disbursement date is required.");
-                return;
-            }
-
-            if (!Number.isFinite(amount) || amount < 0) {
-                alert("Amount must be a valid non-negative number.");
-                return;
-            }
-
-            if (!disbursementMode) {
-                alert("Please select a disbursement mode.");
-                return;
-            }
-
-            try {
-                const result = await fetchAPI("/api/disbursements", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        disbursement_id: disbursementId,
-                        scholarship_id: scholarshipId,
-                        account_no: accountNo,
-                        disbursement_date: disbursementDate,
-                        amount: amount,
-                        disbursement_mode: disbursementMode
-                    })
-                });
-
-                document.getElementById("disbursementMessage").textContent =
-                    result.message || "Disbursement recorded successfully.";
-
-                document.getElementById("disbursementForm").reset();
-                document.getElementById("disbursementId").value =
-                    generateDisbursementId();
-                document.getElementById("disbursementDate").value = todayISO();
-
-                await loadDisbursements();
-            } catch (error) {
-                console.error("Failed to add disbursement:", error);
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", async function() {
-            document.getElementById("feeId").value = generateFeeId();
-            document.getElementById("dueDate").value = todayISO();
-            document.getElementById("paymentId").value = generatePaymentId();
-            document.getElementById("paymentDate").value = todayISO();
-            document.getElementById("transactionId").value = generateTransactionId();
-            document.getElementById("applicationId").value = generateApplicationId();
-            document.getElementById("disbursementId").value = generateDisbursementId();
-            document.getElementById("disbursementDate").value = todayISO();
-            document.getElementById("applicationDate").value = todayISO();
-
-            try {
-                await Promise.all([
-                    loadDashboard(),
-                    loadScholarships(),
-                    loadStudents(),
-                    loadFees(),
-                    loadPayments(),
-                    loadApplications(),
-                    loadDisbursements()
-                ]);
-            } catch (error) {
-                console.error("Initial data loading failed:", error);
-            }
-        });
-    </script>
-
+      }
+      if (targetName === "overview") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const target = $(targetName === "students" ? "studentRecordsSection" : targetName === "fees" ? "feeManagementSection" : "scholarshipManagementSection");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+})();
+
+</script>
 </body>
 </html>
